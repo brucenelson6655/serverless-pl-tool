@@ -448,7 +448,7 @@ def main():
         else :
             print("Name :",output["name"])
             print("Region :",output["region"])
-            print("service (stable) endpoints\n------------------------")
+            print("\nservice (stable) endpoints\n------------------------")
             subnets = output["egress_config"]["default_rules"]["azure_service_endpoint_rule"]["subnets"]
             for sep in subnets :
                 print(sep)
