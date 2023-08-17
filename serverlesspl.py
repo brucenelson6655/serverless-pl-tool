@@ -473,7 +473,7 @@ def main():
         ncc_id = output["network_connectivity_config_id"]
         print("NCC id",ncc_id,"\n\n",output)
     elif command == "create_pe" : 
-        if account_id is None or workspace is None or ncc_id is None or resource_id is None or resource_type is None : 
+        if account_id is None or ncc_id is None or resource_id is None or resource_type is None : 
             print("Missing Parameters : ")
             print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE")
             sys.exit()
