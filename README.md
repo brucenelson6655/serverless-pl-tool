@@ -81,6 +81,9 @@ __ServerlessPL tool usage:__
         -t or --type : The type of resource, dfs or blob or SqlServer
     commands : (use with -C or --command) 
         get_workspace_ncc :  Gets the NCC ID for a given workspace
+        ensure_workspace_ncc :  Gets the NCC ID for a given workspace
+        if the workspave does not have an NCC, create and attach a new NCC. 
+        Can be used for stable endpoints if no private endpoint is desired.
         attach_workspace  :  Attach a NCC (network config) to a workspace
         get_stable_ep :  Gets the stable service endpoints for a given workspace
             to be used for stoarage firewall
@@ -93,7 +96,7 @@ __ServerlessPL tool usage:__
             the NCC id if its attached
         delete_ncc :  deletes a NCC (network config) object (Note: may not be
             able to delete NCCs with active private endpoints)
-        create_serverless_pe :  Main command to use. Creates a private endpoint
+        create_serverless_private_link :  Main command to use. Creates a private endpoint
             for a storage or SQL and ataches to, or updates a workspace. If you
             include an existing NCC id it will update that NCC and add it to the
             workspace or replace an existing NCC.

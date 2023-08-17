@@ -323,7 +323,7 @@ options : '''+color.END+'''
           the NCC id if its attached
     '''+color.BOLD+'''delete_ncc : '''+color.END+''' deletes a NCC (network config) object (Note: may not be
           able to delete NCCs with active private endpoints)
-    '''+color.BOLD+'''create_serverless_pe : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private endpoint
+    '''+color.BOLD+'''create_serverless_private_link : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private endpoint
           for a storage or SQL and ataches to, or updates a workspace. If you
           include an existing NCC id it will update that NCC and add it to the
           workspace or replace an existing NCC.
@@ -448,11 +448,21 @@ def main():
         else :
             print("Name :",output["name"])
             print("Region :",output["region"])
-            print("private endpoints\n------------------------\n")
-            for ep in output["egress_config"]["target_rules"]["azure_private_endpoint_rules"] : 
-                for key in ep :
-                    print(key,":",ep[key])
-                print("-----\n")
+            print("service (stable) endpoints\n------------------------")
+            subnets = output["egress_config"]["default_rules"]["azure_service_endpoint_rule"]["subnets"]
+            for sep in subnets :
+                print(sep)
+            print("\nprivate endpoints\n------------------------")
+            has_ep = False
+            for tr in output["egress_config"] :
+                if tr == "target_rules" :
+                    has_ep = True
+                    for ep in output["egress_config"]["target_rules"]["azure_private_endpoint_rules"] : 
+                        for key in ep :
+                            print(key,":",ep[key])
+                        print("-----\n")
+            if not has_ep : 
+                print("None")
     elif command == "create_ncc" : # todo 
         if account_id is None or account_id is None or ncname is None or regionname is None: 
             print("Missing Parameters : ")
@@ -502,11 +512,10 @@ def main():
             print("url:",output["deployment_name"])
             print("recource group:",output["azure_workspace_info"]["resource_group"])
             print("subscription:",output["azure_workspace_info"]["subscription_id"])
+            has_ncc = False
             for key in output :
                 if key == "network_connectivity_config_id" :
                     has_ncc = True
-                else : 
-                    has_ncc = False
             if has_ncc :         
                 print("NCC id:",output["network_connectivity_config_id"])
             else :
