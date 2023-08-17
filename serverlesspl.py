@@ -310,8 +310,8 @@ options : '''+color.END+'''
 '''+color.BOLD+'''commands : (use with -C or --command) '''+color.END+'''
     '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
     '''+color.BOLD+'''ensure_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
-        if the workspave does not have an NCC, create and attach a new NCC. Can be used for stable
-        endpoints if no private endpoint is desired.
+        if the workspave does not have an NCC, create and attach a new NCC. 
+        Can be used for stable endpoints if no private endpoint is desired.
     '''+color.BOLD+'''attach_workspace  : '''+color.END+''' Attach a NCC (network config) to a workspace
     '''+color.BOLD+'''get_stable_ep : '''+color.END+''' Gets the stable service endpoints for a given workspace
           to be used for stoarage firewall
