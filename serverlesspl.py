@@ -316,8 +316,9 @@ options : '''+color.END+'''
           to be used for stoarage firewall
     '''+color.BOLD+'''get_ncc : '''+color.END+'''Gets details about a NCC, also used to "lock in" the PE info
           to a NCC after the PE is approved approved.
-    '''+color.BOLD+'''create_ncc : '''+color.END+''' Created a blank NCC (network config) object and
+    '''+color.BOLD+'''create_ncc : '''+color.END+''' Creates a blank NCC (network config) object and
           returns its NCC id
+    '''+color.BOLD+'''create_pe : '''+color.END+''' Creates a new private endpoint in a NCC (network config) object
     '''+color.BOLD+'''get_ncc_list : '''+color.END+''' Gets a list of NCCs in the account (tenant)
     '''+color.BOLD+'''get_workspace : '''+color.END+''' Gets details about a given workspace including
           the NCC id if its attached

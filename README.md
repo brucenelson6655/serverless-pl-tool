@@ -91,6 +91,7 @@ __ServerlessPL tool usage:__
             to a NCC after the PE is approved approved.
         create_ncc :  Created a blank NCC (network config) object and
             returns its NCC id
+        create_pe :  Creates a new private endpoint in a NCC (network config) object
         get_ncc_list :  Gets a list of NCCs in the account (tenant)
         get_workspace :  Gets details about a given workspace including
             the NCC id if its attached
