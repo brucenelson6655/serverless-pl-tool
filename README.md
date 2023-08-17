@@ -25,6 +25,33 @@ The serverless-pl tool helps with handling the REST-API and process to create se
    4. *Device Code and Username / Password cache and use a refresh token to prevent constant re-authentication*
    
 ### Credential files
+Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the -l or --login_type option for the mode (sp, device or user) and the -f or --config option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
+
+Examples: 
+__Service Principal (sp)__
+
+            {
+                "tenant" : "your tenant id",
+                "client_id" : "sp client id",
+                "client_secret" : "sp secret"
+            }
+__Device Code (device)__
+
+            {
+                "tenant" : "your tenant id",
+                "client_id" : "application / sp client id",
+                "username" : "username"
+            }
+__User / Password (user)__
+
+            {
+                "tenant" : "your tenant id",
+                "client_id" : "application / sp client id",
+                "username" : "username"
+                "password" : "password"
+            }
+
+*Please follow the Microsoft doc (https://learn.microsoft.com/en-us/azure/databricks/dev-tools/app-aad-token) for instructions on setting up user auth in Azure.*
 
 
 ### Options and Commands
