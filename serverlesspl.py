@@ -1,5 +1,4 @@
 import requests
-# import adal  # https://adal-python.readthedocs.io/en/latest/
 import msal
 import getopt
 import json
