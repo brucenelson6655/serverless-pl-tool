@@ -7,6 +7,8 @@ import sys
 import os
 import atexit
 import pprint
+import string
+import random
 
 # parameters
     # login file
@@ -307,6 +309,9 @@ options : '''+color.END+'''
     -t or --type : The type of resource, dfs or blob or SqlServer
 '''+color.BOLD+'''commands : (use with -C or --command) '''+color.END+'''
     '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
+    '''+color.BOLD+'''ensure_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
+        if the workspave does not have an NCC, create and attach a new NCC. Can be used for stable
+        endpoints if no private endpoint is desired.
     '''+color.BOLD+'''attach_workspace  : '''+color.END+''' Attach a NCC (network config) to a workspace
     '''+color.BOLD+'''get_stable_ep : '''+color.END+''' Gets the stable service endpoints for a given workspace
           to be used for stoarage firewall
@@ -510,15 +515,15 @@ def main():
     elif command == "create_serverless_private_link" :
         if account_id is None or workspace is None or resource_id is None or resource_type is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC --region AZURE-REGION]")
+            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
             sys.exit()
         
         output = get_workspace(bearer, account_id, workspace)
+        has_ncc = False
+        regionname = output["location"]
         for key in output :
             if key == "network_connectivity_config_id" :
                 has_ncc = True
-            else : 
-                has_ncc = False
         if has_ncc :         
             ncc_id = output["network_connectivity_config_id"]
             print("Creating Private Endpoint")
@@ -527,10 +532,9 @@ def main():
             print("Please Approve your private endpoint and run get_ncc command for NCC id ",ncc_id," once approved")
         else : 
             print("creating new NCC")
-            if ncname is None or regionname is None :
-                print("Missing Parameters : nccname and region")
-                print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE --nccname NAME-OF-NCC --region AZURE-REGION")
-                sys.exit()
+            if ncname is None :
+                randname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=7))
+                ncname = "ncc_"+str(randname)+"_"+regionname
             nccobj = create_nas(bearer,account_id, ncname,regionname)
             ncc_id = nccobj["network_connectivity_config_id"]
             print("Adding NCC to workspace")
@@ -539,6 +543,32 @@ def main():
             output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type)
             print(output)
             print("Please Approve your private endpoint and run get_ncc command  for NCC id ",ncc_id," once approved")
+    elif command == "ensure_workspace_ncc" :
+        if account_id is None or workspace is None: 
+            print("Missing Parameters : ")
+            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID")
+            sys.exit()
+        
+        output = get_workspace(bearer, account_id, workspace)
+        has_ncc = False
+        regionname = output["location"]
+        for key in output :
+            if key == "network_connectivity_config_id" :
+                has_ncc = True
+        if has_ncc :         
+            ncc_id = output["network_connectivity_config_id"]
+            print("Adding NCC to workspace")
+            output = update_workspace(bearer, account_id, ncc_id, workspace)
+            print("NCC id :",ncc_id)
+        else : 
+            print("creating new NCC")
+            randname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=7))
+            ncname = "ncc_"+str(randname)+"_"+regionname
+            output = create_nas(bearer,account_id, ncname,regionname)
+            ncc_id = output["network_connectivity_config_id"]
+            print("Adding NCC to workspace")
+            output = update_workspace(bearer, account_id, ncc_id, workspace)
+            print("NCC id :",ncc_id)
 
          
     else:
