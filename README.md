@@ -29,17 +29,6 @@ The serverless-pl tool helps with handling the REST-API and process to create se
 ### Credential files
 Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the -l or --login_type option for the mode (sp, device or user) and the -f or --config option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
 
-## Definitions 
-__NCC or Network Connectivity Config__ : 
-
-__Stable Endpoint__ :
-
-__Private Endpoint__ : 
-
-__Serverless Compute__ : 
-
-## Process : 
-
 
 Examples: 
 __Service Principal (sp)__
@@ -67,6 +56,35 @@ __User / Password (user)__
 
 *Please follow the Microsoft doc (https://learn.microsoft.com/en-us/azure/databricks/dev-tools/app-aad-token) for instructions on setting up user auth in Azure.*
 
+## Definitions 
+__NCC or Network Connectivity Config__ : 
+
+__Stable Endpoint__ :
+
+__Private Endpoint__ : 
+
+__Serverless Compute__ : 
+
+## Process : 
+
+__NCC Setup__
+
+- [Step 1] Create a Network Connectivity Config
+- [Step 2] Attach the NCC object to the workspace
+   
+    __Service (Stable) Enpoints :__ 
+
+__ensure_workspace_ncc()__
+- [Step 1] View the subnet IDs that applies to the workspace
+- [Step 2] Add subnets to the firewall of the customer storage account.
+   
+     __Private End Points__
+
+__create_serverless_private_link()__ 
+- [Step 1] Create the Azure Private Endpoint rule
+- [Step 2] Ensure the private endpoint is successfully created
+- [Step 3] Approve the private endpoint (in the Azure Portal)
+- [Step 4] Refresh the private endpoint status in Databricks (__get_ncc()__)
 
 ### Options and Commands
 __ServerlessPL tool usage:__
