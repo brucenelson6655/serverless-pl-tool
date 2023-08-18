@@ -285,50 +285,50 @@ def usage() :
     print(color.BOLD+'''ServerlessPL tool usage: 
           
 
-options : '''+color.END+'''
-    -h or --help : this page
-    --logout : Removes cached login and refresh token for use 
-          and device (see README)
-    -v : verbose output - expands some command outputs from lists to 
-          whole json docs
-    -C or --command : See commands below - each command performs a distict
-          action for serverless private link
-    -w or --workspaceId : The worksace ID 
-    -a or --accountId : The Account ID from UC account console 
-    -n or --nccId : THe ID of the NCC (network config) object
-    -l or --login_type : Default service principal. Choose between
-          Device code login (device), Username / Passowrd (user),
-          or Service Principal (sp)  See README
-    -f or --config : Default credential.json, JSON file for holding user / sp
-          credentials (See README) 
-    --nccname : Unique name for the NCC object 
-    --region :  Azure region, examlpe: eastus, westus, westus2
-    -r or --resourceId : The resource ID of the storage account/sql db you
-          wish to create a private end point to
-    -t or --type : The type of resource, dfs or blob or SqlServer
-'''+color.BOLD+'''commands : (use with -C or --command) '''+color.END+'''
+    options : '''+color.END+'''
+    '''+color.BOLD+'''-h or --help :'''+color.END+''' this page
+    '''+color.BOLD+'''--logout :'''+color.END+''' Removes cached login and refresh token for use
+        and device (see README)
+    '''+color.BOLD+'''-v :'''+color.END+''' verbose output - expands some command outputs from lists to
+        whole json docs
+    '''+color.BOLD+'''-C or --command :'''+color.END+''' See commands below - each command performs a distinct
+        action for serverless private link
+    '''+color.BOLD+'''-w or --workspaceId :'''+color.END+''' The workspace ID
+    '''+color.BOLD+'''-a or --accountId :'''+color.END+''' The Account ID from UC account console
+    '''+color.BOLD+'''-n or --nccId :'''+color.END+''' THe ID of the NCC (network config) object
+    '''+color.BOLD+'''-l or --login_type :'''+color.END+''' Default service principal. Choose between
+        Device code login (device), Username / Password (user),
+        or Service Principal (sp) See README
+    '''+color.BOLD+'''-f or --config :'''+color.END+''' Default credential.json, JSON file for holding user / sp
+        credentials (See README)
+    '''+color.BOLD+'''--nccname :'''+color.END+''' Unique name for the NCC object
+    '''+color.BOLD+'''--region :'''+color.END+''' Azure region, example: eastus, westus, westus2
+    '''+color.BOLD+'''-r or --resourceId :'''+color.END+''' The resource ID of the storage account/sql db you
+        wish to create a private end point to
+    '''+color.BOLD+'''-t or --type :'''+color.END+''' The type of resource, dfs or blob or SqlServer
+    '''+color.BOLD+'''commands :'''+color.END+''' (use with -C or --command) '''+color.END+'''
     '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
     '''+color.BOLD+'''ensure_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
-        if the workspave does not have an NCC, create and attach a new NCC. 
+        if the workspace does not have an NCC, create and attach a new NCC.
         Can be used for stable endpoints if no private endpoint is desired.
-    '''+color.BOLD+'''attach_workspace  : '''+color.END+''' Attach a NCC (network config) to a workspace
+    '''+color.BOLD+'''attach_workspace : '''+color.END+''' Attach a NCC (network config) to a workspace
     '''+color.BOLD+'''get_stable_ep : '''+color.END+''' Gets the stable service endpoints for a given workspace
-          to be used for stoarage firewall
+        to be used for storage firewall
     '''+color.BOLD+'''get_ncc : '''+color.END+'''Gets details about a NCC, also used to "lock in" the PE info
-          to a NCC after the PE is approved approved.
+        to a NCC after the PE is approved.
     '''+color.BOLD+'''create_ncc : '''+color.END+''' Creates a blank NCC (network config) object and
-          returns its NCC id
+    returns its NCC id
     '''+color.BOLD+'''create_pe : '''+color.END+''' Creates a new private endpoint in a NCC (network config) object
     '''+color.BOLD+'''get_ncc_list : '''+color.END+''' Gets a list of NCCs in the account (tenant)
     '''+color.BOLD+'''get_workspace : '''+color.END+''' Gets details about a given workspace including
-          the NCC id if its attached
+        the NCC id if its attached
     '''+color.BOLD+'''delete_ncc : '''+color.END+''' deletes a NCC (network config) object (Note: may not be
-          able to delete NCCs with active private endpoints)
-    '''+color.BOLD+'''create_serverless_private_link : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private endpoint
-          for a storage or SQL and ataches to, or updates a workspace. If you
-          include an existing NCC id it will update that NCC and add it to the
-          workspace or replace an existing NCC.
-          ''')
+        able to delete NCCs with active private endpoints)
+    '''+color.BOLD+'''create_serverless_private_link : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private
+        endpoint for storage or SQL and attaches to, or updates a workspace. If
+        you include an existing NCC id it will update that NCC and add it to the
+        workspace or replace an existing NCC.
+    ''')
 
 def logout() :
     filename = "my_cache.bin"
