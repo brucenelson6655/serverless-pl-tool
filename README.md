@@ -71,95 +71,59 @@ __User / Password (user)__
 ### Options and Commands
 __ServerlessPL tool usage:__
           
-**options :**
+__options :__
 
-**-h or --help :** this page
+__-h or --help :__ this page
 
-**--logout :** Removes cached login and refresh token for use
+__--logout :__ Removes cached login and refresh token for use and device (see README)
 
-and device (see README)
+__-v :__ verbose output - expands some command outputs from lists to whole json docs
 
-**-v :** verbose output - expands some command outputs from lists to
+__-C or --command :__ See commands below - each command performs a distinct action for serverless private link
 
-whole json docs
+__-w or --workspaceId :__ The workspace ID
 
-**-C or --command :** See commands below - each command performs a
-distinct
+__-a or --accountId :__ The Account ID from UC account console
 
-action for serverless private link
+__-n or --nccId :__ THe ID of the NCC (network config) object
 
-**-w or --workspaceId :** The workspace ID
+__-l or --login_type :__ Default service principal. Choose between Device code login (device), Username / Password (user), or Service Principal (sp) See README
 
-**-a or --accountId :** The Account ID from UC account console
-
-**-n or --nccId :** THe ID of the NCC (network config) object
-
-**-l or --login_type :** Default service principal. Choose between
-
-Device code login (device), Username / Password (user),
-
-or Service Principal (sp) See README
-
-**-f or --config :** Default credential.json, JSON file for holding user
-/ sp
+__-f or --config :__ Default credential.json, JSON file for holding user / sp
 
 credentials (See README)
 
-**--nccname :** Unique name for the NCC object
+__--nccname :__ Unique name for the NCC object
 
-**--region :** Azure region, example: eastus, westus, westus2
+__--region :__ Azure region, example: eastus, westus, westus2
 
-**-r or --resourceId :** The resource ID of the storage account/sql db
-you
+__-r or --resourceId :__ The resource ID of the storage account/sql db you wish to create a private end point to
 
-wish to create a private end point to
+__-t or --type :__ The type of resource, dfs or blob or SqlServer
 
-**-t or --type :** The type of resource, dfs or blob or SqlServer
+__commands :__ (use with -C or --command)
 
-**commands :** (use with -C or --command)
+__get_workspace_ncc :__ Gets the NCC ID for a given workspace
 
-**get_workspace_ncc :** Gets the NCC ID for a given workspace
+__ensure_workspace_ncc :__ Gets the NCC ID for a given workspace if the workspace does not have an NCC, create and attach a new NCC. Can be used for stable endpoints if no private endpoint is desired.
 
-**ensure_workspace_ncc :** Gets the NCC ID for a given workspace
+__attach_workspace :__ Attach a NCC (network config) to a workspace
 
-if the workspace does not have an NCC, create and attach a new NCC.
+__get_stable_ep :__ Gets the stable service endpoints for a given workspace to be used for storage firewall
 
-Can be used for stable endpoints if no private endpoint is desired.
+__get_ncc :__ Gets details about a NCC, also used to "lock in" the PE
+info to a NCC after the PE is approved.
 
-**attach_workspace :** Attach a NCC (network config) to a workspace
+__create_ncc :__ Creates a blank NCC (network config) object and returns its NCC id
 
-**get_stable_ep :** Gets the stable service endpoints for a given
-workspace
-
-to be used for storage firewall
-
-**get_ncc :** Gets details about a NCC, also used to "lock in" the PE
-info
-
-to a NCC after the PE is approved.
-
-**create_ncc :** Creates a blank NCC (network config) object and
-
-returns its NCC id
-
-**create_pe :** Creates a new private endpoint in a NCC (network config)
+__create_pe :__ Creates a new private endpoint in a NCC (network config)
 object
 
-**get_ncc_list :** Gets a list of NCCs in the account (tenant)
+__get_ncc_list :__ Gets a list of NCCs in the account (tenant)
 
-**get_workspace :** Gets details about a given workspace including
+__get_workspace :__ Gets details about a given workspace including the NCC id if its attached
 
-the NCC id if its attached
+__delete_ncc :__ deletes a NCC (network config) object (Note: may not be able to delete NCCs with active private endpoints)
 
-**delete_ncc :** deletes a NCC (network config) object (Note: may not be
-
-able to delete NCCs with active private endpoints)
-
-**create_serverless_private_link :** <u>Main command to use</u>. Creates
-a private
-
-endpoint for storage or SQL and attaches to, or updates a workspace. If
-
-you include an existing NCC id it will update that NCC and add it to the
-
-workspace or replace an existing NCC.
+__create_serverless_private_link :__ <u>Main command to use</u>. Creates
+a private endpoint for storage or SQL and attaches to, or updates a workspace. If you include an existing NCC id it will update that NCC and add it to the workspace or replace an existing NCC.
