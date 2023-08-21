@@ -82,7 +82,9 @@ I have dumped out the -h or --help page from the tool below. Commands are called
         Missing Parameters : 
         serverlesspl.py -C get_ncc_by_resource [-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]
 
->![Important] Any option in brackets is optional. Some commands will prompt you to procede, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command.
+
+>![IMPORTANT] Any option in brackets is optional. Some commands will prompt you to procede, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command.
+
 
 One last thing, commands that create a private end point `create_serverless_private_link` and `create_pe` will check to see if the resource id of the object you are wanting to create a private endpoint for, already has a private endpoint setup in a NCC. You will be promted to add a` -F` or `--force` flag to override this check. 
 
