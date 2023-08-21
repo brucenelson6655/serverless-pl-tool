@@ -1,6 +1,5 @@
 # serverless-pl-tool
 
-Converted using https://alldocs.app/convert-word-docx-to-markdown
 
 The Serverless Secure Connectivity feature enables you to securely connect your
 Serverless clusters with backend resources such as Azure Data Lake Storage (ADLS)
@@ -10,13 +9,13 @@ With this feature you can:
 1. Configure Azure Storage firewall to constrain access to Databricks Serverless
 runtime based on a set of stable subnet IDs (Service Endpoints) associated
 with your Workspace.
-2. Configure dedicated and private connectivity using Azure Private Link to
+1. Configure dedicated and private connectivity using Azure Private Link to
 cloud backends such as:
 
     1. Azure Storage
     2. Azure SQL (external Hive Metadata Store)
 
-The serverless-pl tool helps with handling the REST-API and process to create serverless private and points and also generating service endpints (stable end point) for storage firewall if private end points are not needed. 
+The serverless-pl tool helps with handling the REST-API and process to create serverless private endpoints and also generating service endpoints (stable end point) for storage firewall if private endpoints are not needed. 
 
 ##  Setup : 
 1. Python packages : You will need to install the MSAL for python package for Python version 3 (pip install MSAL), all other packages should be built in. 
@@ -27,9 +26,9 @@ The serverless-pl tool helps with handling the REST-API and process to create se
    4. *Device Code and Username / Password cache and use a refresh token to prevent constant re-authentication*
    
 ### Credential files
-Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the `-l or --login_type` option for the mode (sp, device or user) and the `-f or --config` option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
+Each option for authentication uses a JSON file. By default the application uses a file called credential.json, but you can use a different file or files for different authentication methods or users using the `-l or --login_type` option for the mode (sp, device or user) and the `-f or --config` option for the filename. A sample credential file is in the repo, edit it accordingly and rename to credential.json. 
 
-For All of these different types credential files, you can also add as an option you account ID since its used in almost every command. If you include it stall can be overriden by using the `-a or --accountId` option.
+For All of these different types credential files, you can also add as an option you account ID since its used in almost every command. If you include it stall can be overridden by using the `-a or --accountId` option.
 
 
 Examples: 
@@ -68,22 +67,22 @@ __NCC or Network Connectivity Config__ :
 The NCC or Network Connectivity Config is a confoguration object that can be attached to one or more workspaces in the serverless compute plane. NCCs are region specific. Think of it as a package of configuration data for service endpoints (Stable Endpoints)and Private Endpoints. A customer may hae just one per region or one per business unit or modality. 
 
 __Stable Endpoint__ :
-Stable Endpoints are for now service endpoints that are tied to a workspace in the region that are guarenteed to never change once declared and assigned. As a service endpoint they are still relying on public IPs but have a higher order of precidence for routling that give them a preferred, private route between source and target. But they are still a shared object as oppsed to private end points but also don't have the costs associated with private endpoints.  
+Stable Endpoints are for now service endpoints that are tied to a workspace in the region that are guaranteed to never change once declared and assigned. As a service endpoint they are still relying on public IPs but have a higher order of precedence for routling that give them a preferred, private route between source and target. But they are still a shared object as opposed to private endpoints but also don't have the costs associated with private endpoints.  
 
 __Private Endpoint__ : 
 Private end points are a direct source to target communication, using RFC 1918 IPs (non-public). Private Endpoints are the most secure type of commnunication but do have a significant cost associated with them. 
 
 __Serverless Compute__ : 
-Literally the serverless data plane, which runs in the Databricks tenant. It cannot access *anything* in the customer's tenant unless its wither publically accessable, has service endpoints setup or uses a private endpoint to access. COntrol plane to server less compute comms use private IP communications. 
+Literally the serverless data plane, which runs in the Databricks tenant. It cannot access anything in the customer's tenant unless its either publicly accessible, has service endpoints setup or uses a private endpoint to access. Control plane to serverless compute comms use private IP communications. 
 
 __Commands and Options__ : 
-I have dumped out the -h or --help page from the tool below. Commands are call by using the `-C` switch with options. If you want to find out what are the nescessary options for a command, just run the command without any options and it will show you the the command line options. 
+I have dumped out the -h or --help page from the tool below. Commands are called by using the `-C` switch with options. If you want to find out what are the nescessary options for a command, just run the command without any options and it will show you the the command line options. 
 
         Example : serverless-pl$ python3 serverlesspl.py -C get_ncc_by_resource
         Missing Parameters : 
         serverlesspl.py -C get_ncc_by_resource [-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]
 
-Any option in brackets is optional. Some commands will prompt you to procedd, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command. 
+>![Important] Any option in brackets is optional. Some commands will prompt you to procede, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command.
 
 One last thing, commands that create a private end point `create_serverless_private_link` and `create_pe` will check to see if the resource id of the object you are wanting to create a private endpoint for, already has a private endpoint setup in a NCC. You will be promted to add a` -F` or `--force` flag to override this check. 
 
@@ -119,7 +118,7 @@ __create_serverless_private_link()__
 
 ### Create a private endpoint
 
-Using the `create_serverless_private_link` command, it will perform the nesessary steps to check if a host already has an NCC, verify if your resource ID has a private end point setup already, if needed create a NCC and attech it to your workspace. The minimum set of options for this command are : 
+Using the `create_serverless_private_link` command, it will perform the necessary steps to check if a host already has an NCC, verify if your resource ID has a private end point setup already, if needed create a NCC and attach it to your workspace. The minimum set of options for this command are : 
 
     -r or --resourceId 
     -t or --resourceType
@@ -132,9 +131,9 @@ The full command line options are :
 
 You can add you account number if you didn't add it in the credential file, create a custom name for the NCC. Also as descussed ealier in this doc the optional -I or --nprompt and -F or --force if needed. 
 
-You will the the resource ID and type (blob, dfs) of the storage account or SQL and the workspace ID. 
+You will add the resource ID and type (blob, dfs) of the storage account or SQL and the workspace ID. 
 
-Run the commeand : 
+Run the command : 
 
     serverlesspl.py -C create_serverless_private_link -r /subscriptions/xxxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/databricks-demo/providers/Microsoft.Storage/storageAccounts/mystoarge -t dfs -w 5205279068054683
 
@@ -146,7 +145,7 @@ Run the commeand :
     Creating Private Endpoint
     Please Approve your private endpoint and run get_ncc command  for NCC id xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx once approved
 
-Approve the privaet endpoint
+Approve the private  endpoint
 
 ![Endpoint approval](./images/approve.png)
 
@@ -193,7 +192,7 @@ The full command line options are :
     serverlesspl.py -C ensure_workspace_ncc [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID
 
 ### Options and Commands
-__ServerlessPL tool usage:__
+__serverless-pl tool usage:__
           
 __options :__
 
@@ -209,7 +208,7 @@ __-w or --workspaceId :__ The workspace ID
 
 __-a or --accountId :__ The Account ID from UC account console
 
-__-n or --nccId :__ THe ID of the NCC (network config) object
+__-n or --nccId :__ The ID of the NCC (network config) object
 
 __-l or --login_type :__ Default service principal. Choose between Device code login (device), Username / Password (user), or Service Principal (sp) See README
 
