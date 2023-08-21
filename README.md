@@ -29,11 +29,14 @@ The serverless-pl tool helps with handling the REST-API and process to create se
 ### Credential files
 Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the -l or --login_type option for the mode (sp, device or user) and the -f or --config option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
 
+For All of these different types credential files, you can also add as an option you account ID since its used in almost every command. If you include it stall can be overriden by using the "-a" or "--accountId" option.
+
 
 Examples: 
 __Service Principal (sp)__
 
             {
+                "accountId" : "(Optional) your account ID",
                 "tenant" : "your tenant id",
                 "client_id" : "sp client id",
                 "client_secret" : "sp secret"
@@ -41,20 +44,24 @@ __Service Principal (sp)__
 __Device Code (device)__
 
             {
+                "accountId" : "(Optional) your account ID",
                 "tenant" : "your tenant id",
                 "client_id" : "application / sp client id",
-                "username" : "username"
+                "username" : "(Optional) username"
             }
+            
 __User / Password (user)__
 
             {
+                "accountId" : "(Optional) your account ID",
                 "tenant" : "your tenant id",
                 "client_id" : "application / sp client id",
                 "username" : "username"
                 "password" : "password"
             }
 
-*Please follow the Microsoft doc (https://learn.microsoft.com/en-us/azure/databricks/dev-tools/app-aad-token) for instructions on setting up user auth in Azure.*
+> [!IMPORTANT]
+> *Please follow the Microsoft doc (https://learn.microsoft.com/en-us/azure/databricks/dev-tools/app-aad-token) for instructions on setting up user auth in Azure.*
 
 ## Definitions 
 __NCC or Network Connectivity Config__ : 
@@ -67,18 +74,18 @@ __Serverless Compute__ :
 
 ## Process : 
 
-__NCC Setup__
+__NCC Setup (ensure_workspace_ncc() or create_serverless_private_link())__
 
 - [Step 1] Create a Network Connectivity Config
-- [Step 2] Attach the NCC object to the workspace
+- [Step 2] Attach the NCC object to one or more workspace
    
-    __Service (Stable) Enpoints :__ 
+__Service (Stable) Enpoints :__ 
 
 __ensure_workspace_ncc()__
 - [Step 1] View the subnet IDs that applies to the workspace
 - [Step 2] Add subnets to the firewall of the customer storage account.
    
-     __Private End Points__
+__Private End Points__
 
 __create_serverless_private_link()__ 
 - [Step 1] Create the Azure Private Endpoint rule
@@ -111,6 +118,8 @@ __-f or --config :__ Default credential.json, JSON file for holding user / sp
 
 credentials (See README)
 
+__-I or --noprompt :__ Run in non-interactive mode, do not prompt. Nor scripts etc.
+
 __--nccname :__ Unique name for the NCC object
 
 __--region :__ Azure region, example: eastus, westus, westus2
@@ -121,27 +130,30 @@ __-t or --type :__ The type of resource, dfs or blob or SqlServer
 
 __commands :__ (use with -C or --command)
 
-__get_workspace_ncc :__ Gets the NCC ID for a given workspace
-
-__ensure_workspace_ncc :__ Gets the NCC ID for a given workspace if the workspace does not have an NCC, create and attach a new NCC. Can be used for stable endpoints if no private endpoint is desired.
-
-__attach_workspace :__ Attach a NCC (network config) to a workspace
-
-__get_stable_ep :__ Gets the stable service endpoints for a given workspace to be used for storage firewall
-
-__get_ncc :__ Gets details about a NCC, also used to "lock in" the PE
-info to a NCC after the PE is approved.
-
-__create_ncc :__ Creates a blank NCC (network config) object and returns its NCC id
-
-__create_pe :__ Creates a new private endpoint in a NCC (network config)
-object
-
-__get_ncc_list :__ Gets a list of NCCs in the account (tenant)
-
-__get_workspace :__ Gets details about a given workspace including the NCC id if its attached
-
-__delete_ncc :__ deletes a NCC (network config) object (Note: may not be able to delete NCCs with active private endpoints)
-
-__create_serverless_private_link :__ <u>Main command to use</u>. Creates
+>__create_serverless_private_link :__ <u>Main command to use</u>. Creates
 a private endpoint for storage or SQL and attaches to, or updates a workspace. If you include an existing NCC id it will update that NCC and add it to the workspace or replace an existing NCC.
+>
+>__ensure_workspace_ncc :__ Gets the NCC ID for a given workspace if the workspace does not have an NCC, create and attach a new NCC. Can be used for stable endpoints if no private endpoint is desired.
+
+__Utility Commands :__
+
+>__attach_workspace :__ Attach a NCC (network config) to a workspace
+>
+>__get_stable_ep :__ Gets the stable service endpoints for a given workspace to be used for storage firewall
+>
+>__get_ncc :__ Gets details about a NCC, also used to "lock in" the PE
+info to a NCC after the PE is approved. Also "sets" the NCC after a change has been made to the NCC. 
+>
+>__get_workspace_ncc :__ Gets the NCC ID for a given workspace
+>
+>__create_ncc :__ Creates a blank NCC (network config) object and returns its NCC id
+>
+>__create_pe :__ Creates a new private endpoint in a NCC (network config)
+object
+>
+>__get_ncc_list :__ Gets a list of NCCs in the account (tenant)
+>
+>__get_workspace :__ Gets details about a given workspace including the NCC id if its attached
+>
+>__delete_ncc :__ deletes a NCC (network config) object (Note: may not be able to delete NCCs with active private endpoints)
+

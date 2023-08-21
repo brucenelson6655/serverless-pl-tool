@@ -23,8 +23,12 @@ import random
 # constants 
 ACCOUNT_URL = "https://accounts.azuredatabricks.net/api/2.0/accounts/"
 
+ACCOUNT_ID = None
+
 
 def get_bearer_token_msal(credfile, login_type):
+    global ACCOUNT_ID
+
     authority_host_url = "https://login.microsoftonline.com/"
     # the Application ID of  AzureDatabricks
     scopes = [ '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d/.default' ]
@@ -35,6 +39,9 @@ def get_bearer_token_msal(credfile, login_type):
 
     authority_url = authority_host_url + user_parameters['tenant']
 
+    for key in user_parameters : 
+        if key == "accountId" :
+            ACCOUNT_ID = user_parameters["accountId"] 
 
     cache = msal.SerializableTokenCache()
 
@@ -62,7 +69,6 @@ def get_bearer_token_msal(credfile, login_type):
         result = app.acquire_token_silent(scopes=scopes, account=account)
 
         if not result:
-            print("user not silent\n")
             result = app.acquire_token_by_username_password(username = user_parameters['username'], password = user_parameters['password'], scopes=scopes)
 
     if login_type == "sp":
@@ -71,7 +77,6 @@ def get_bearer_token_msal(credfile, login_type):
         result = app.acquire_token_silent(scopes=scopes, account=None)
 
         if not result:
-            print("sp not silent\n")
             result = app.acquire_token_for_client(scopes)
 
     if login_type == "device":
@@ -91,7 +96,6 @@ def get_bearer_token_msal(credfile, login_type):
         result = app.acquire_token_silent(scopes=scopes, account=account)
 
         if not result:
-            print("user not silent\n")
             flow = app.initiate_device_flow(scopes=scopes)
             print(flow['message'])
             result = app.acquire_token_by_device_flow(flow)
@@ -164,6 +168,21 @@ def create_pe (bearertoken, accountId, nccId, resourceID, resourceType) :
         print(errh.args[0]) 
 
     return(response.json())
+
+def get_ncc_by_resource (bearertoken, accountId, resourceID, resourceType) : 
+
+    nccmatch = []
+
+    nccs = get_ncc_list(bearertoken,accountId)
+
+    for ncc in nccs : 
+        ncc_id = ncc["network_connectivity_config_id"]
+        if "egress_config" in ncc : 
+            if "target_rules" in ncc["egress_config"] :
+                for res in ncc["egress_config"]["target_rules"]["azure_private_endpoint_rules"] :
+                    if res["resource_id"] == resourceID and res["group_id"] == resourceType and res["connection_state"] == "ESTABLISHED" :
+                        nccmatch.append({"ncc" : ncc_id})           
+    return nccmatch
 
 def get_ncc_list (bearertoken, accountId) :
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs"
@@ -269,6 +288,25 @@ def delete_ncc (bearertoken, accountId, nccId) :
 
     print(response.text)
 
+def confirm(ignore, message):
+    """
+    Ask user to enter Y or N (case-insensitive).
+    :return: True if the answer is Y.
+    :rtype: bool
+    """
+    if ignore :
+        return True
+    
+    answer = ""
+    response = False
+    print(message)
+    while answer not in ["y", "n"]:
+        answer = input("OK to continue [Y/N]? ").lower()
+    if answer == "y" :
+        response = True
+
+    return response
+
 def usage() : 
     class color:
         PURPLE = '\033[95m'
@@ -295,27 +333,36 @@ def usage() :
         action for serverless private link
     '''+color.BOLD+'''-w or --workspaceId :'''+color.END+''' The workspace ID
     '''+color.BOLD+'''-a or --accountId :'''+color.END+''' The Account ID from UC account console
-    '''+color.BOLD+'''-n or --nccId :'''+color.END+''' THe ID of the NCC (network config) object
+    '''+color.BOLD+'''-n or --nccId :'''+color.END+''' The ID of the NCC (network config) object
     '''+color.BOLD+'''-l or --login_type :'''+color.END+''' Default service principal. Choose between
         Device code login (device), Username / Password (user),
         or Service Principal (sp) See README
     '''+color.BOLD+'''-f or --config :'''+color.END+''' Default credential.json, JSON file for holding user / sp
         credentials (See README)
+    '''+color.BOLD+'''-I or --noprompt :'''+color.END+''' Run in non-interactive mode, do not prompt. For scripts etc.
+    '''+color.BOLD+'''-F or --force :'''+color.END+''' Override default behavior to stop on a config issue
     '''+color.BOLD+'''--nccname :'''+color.END+''' Unique name for the NCC object
     '''+color.BOLD+'''--region :'''+color.END+''' Azure region, example: eastus, westus, westus2
     '''+color.BOLD+'''-r or --resourceId :'''+color.END+''' The resource ID of the storage account/sql db you
         wish to create a private end point to
     '''+color.BOLD+'''-t or --type :'''+color.END+''' The type of resource, dfs or blob or SqlServer
+
     '''+color.BOLD+'''commands :'''+color.END+''' (use with -C or --command) '''+color.END+'''
-    '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
+    '''+color.BOLD+'''create_serverless_private_link : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private
+        endpoint for storage or SQL and attaches to, or updates a workspace. If
+        you include an existing NCC id it will update that NCC and add it to the
+        workspace or replace an existing NCC.
     '''+color.BOLD+'''ensure_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
         if the workspace does not have an NCC, create and attach a new NCC.
         Can be used for stable endpoints if no private endpoint is desired.
+    
+    '''+color.BOLD+'''utilities :'''+color.END+'''
     '''+color.BOLD+'''attach_workspace : '''+color.END+''' Attach a NCC (network config) to a workspace
     '''+color.BOLD+'''get_stable_ep : '''+color.END+''' Gets the stable service endpoints for a given workspace
         to be used for storage firewall
     '''+color.BOLD+'''get_ncc : '''+color.END+'''Gets details about a NCC, also used to "lock in" the PE info
         to a NCC after the PE is approved.
+    '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
     '''+color.BOLD+'''create_ncc : '''+color.END+''' Creates a blank NCC (network config) object and
     returns its NCC id
     '''+color.BOLD+'''create_pe : '''+color.END+''' Creates a new private endpoint in a NCC (network config) object
@@ -324,10 +371,6 @@ def usage() :
         the NCC id if its attached
     '''+color.BOLD+'''delete_ncc : '''+color.END+''' deletes a NCC (network config) object (Note: may not be
         able to delete NCCs with active private endpoints)
-    '''+color.BOLD+'''create_serverless_private_link : '''+color.END+''' '''+color.UNDERLINE+'''Main command to use'''+color.END+'''. Creates a private
-        endpoint for storage or SQL and attaches to, or updates a workspace. If
-        you include an existing NCC id it will update that NCC and add it to the
-        workspace or replace an existing NCC.
     ''')
 
 def logout() :
@@ -339,6 +382,7 @@ def logout() :
 
 
 def main():
+    global ACCOUNT_ID
     login_type = "sp"  # sp, device or user
     config_file = "credential.json"
     command = None
@@ -349,6 +393,9 @@ def main():
     ncname = None
     resource_id = None
     resource_type = None
+    noprompt = False
+    override = False
+
     class color:
         PURPLE = '\033[95m'
         CYAN = '\033[96m'
@@ -362,7 +409,7 @@ def main():
         END = '\033[0m'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:t:f:l:v", ["help", "command=", "resourceId=", "type=", "workspaceId=", "login_type=", "config=", "nccname=", "region=","logout"])
+        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:t:f:l:v:IF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err)  # will print something like "option -a not recognized"
@@ -401,16 +448,25 @@ def main():
             resource_id = a
         elif o in ("-t","--type"):
             resource_type = a
+        elif o in ("-I","--noprompt") :
+            noprompt = True
+        elif o in ("-F","--force") :
+            override = True
         else:
             assert False, "unhandled option"
             sys.exit()
     
     if command is not None :
         bearer = get_bearer_token_msal(config_file, login_type)
+        # pick up account id from global vars if needed 
+        if account_id == None :
+            account_id = ACCOUNT_ID
+            
+
     if command == "get_workspace_ncc" :
         if account_id is None or workspace is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID [-v]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID [-v]")
             sys.exit()
         ncc_body = get_workspace_ncc(bearer, account_id, workspace)
         for ncc_json in ncc_body : 
@@ -421,14 +477,14 @@ def main():
     elif command == "attach_workspace" : 
         if account_id is None or ncc_id is None or workspace is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -n|--nccId NCC-ID -w|--workspace WORKSPACE-ID")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -w|--workspace WORKSPACE-ID")
             sys.exit()
         output = update_workspace (bearer, account_id, ncc_id, workspace) 
         print(output)
     elif command == "get_stable_ep" :
         if account_id is None or workspace is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID [-v]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID [-v]")
             sys.exit()
         output = get_workspace_ncc(bearer, account_id, workspace)
         if verbose : 
@@ -441,7 +497,7 @@ def main():
     elif command == "get_ncc" :
         if account_id is None or ncc_id is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -n|--nccId NCC-ID [-v]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID [-v]")
             sys.exit()
         output = get_ncc(bearer, account_id, ncc_id)
         if verbose : 
@@ -467,7 +523,7 @@ def main():
     elif command == "create_ncc" : # todo 
         if account_id is None or account_id is None or ncname is None or regionname is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID --nccname NAME-OF-NCC --region AZURE-REGION")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] --nccname NAME-OF-NCC --region AZURE-REGION")
             sys.exit()
         output = create_nas(bearer,account_id, ncname,regionname)
         ncc_id = output["network_connectivity_config_id"]
@@ -475,33 +531,46 @@ def main():
     elif command == "create_pe" : 
         if account_id is None or ncc_id is None or resource_id is None or resource_type is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE")
             sys.exit()
         output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
         print(output)
     elif command == "delete_ncc" :
         if account_id is None or account_id is None or ncc_id is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -n|--nccId NCC-ID")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID")
             sys.exit()
         output = delete_ncc(bearer, account_id, ncc_id)
         pprint.pprint(output)
+    elif command == "get_ncc_by_resource" :
+        if account_id is None or resource_id is None or resource_type is None: 
+            print("Missing Parameters : ")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
+            sys.exit()
+        
+        output = get_ncc_by_resource(bearer,account_id, resource_id, resource_type)
+        for nccmatch in output : 
+            print(resource_id,"was found in NCC", nccmatch["ncc"])
+    
     elif command == "get_ncc_list" : 
         if account_id is None or account_id is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID [-v]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] [-v]")
             sys.exit()
         output = get_ncc_list(bearer, account_id)
+        if not verbose : 
+            print("{:<30} {:<36} {:<15}".format("NCC Name", "NCC ID", "Region"))
+            print("{:<30} {:<36} {:<15}".format("---------", "-------", "--------"))
         for ncc_json in output : 
             if verbose :
                 print("\n-----------------------\n")
                 pprint.pprint(ncc_json)
             else:
-                print(ncc_json["name"],ncc_json["network_connectivity_config_id"],ncc_json["region"])
+                print("{:<30} {:<36} {:<15}".format(ncc_json["name"],ncc_json["network_connectivity_config_id"],ncc_json["region"]))
     elif command == "get_workspace" : 
         if account_id is None or workspace is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID [-v]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID [-v]")
             sys.exit()
         output = get_workspace(bearer, account_id, workspace)
 
@@ -524,19 +593,28 @@ def main():
     elif command == "create_serverless_private_link" :
         if account_id is None or workspace is None or resource_id is None or resource_type is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
             sys.exit()
         
         output = get_workspace(bearer, account_id, workspace)
         has_ncc = False
         regionname = output["location"]
-        for key in output :
-            if key == "network_connectivity_config_id" :
-                has_ncc = True
-        if has_ncc :         
+
+        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type)
+        
+        if len(nccmatchtest) > 0 : 
+            for nccmatch in nccmatchtest : 
+                print(resource_id,"was found in NCC", nccmatch["ncc"])
+            if not override :
+                print("Either add or replace NCC",nccmatch["ncc"],"or user the -F or --force flag to override." )
+                sys.exit()
+
+        if "network_connectivity_config_id" in output : # has an NCC 
             ncc_id = output["network_connectivity_config_id"]
             print("Creating Private Endpoint")
-            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
+            if not confirm(noprompt,"You are about to add a private endpoint to workspace "+output["workspace_name"]+" serverless compute networking config.") :
+                sys.exit()
+            # output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
             print(output)
             print("Please Approve your private endpoint and run get_ncc command for NCC id ",ncc_id," once approved")
         else : 
@@ -544,6 +622,8 @@ def main():
             if ncname is None :
                 randname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=7))
                 ncname = "ncc_"+str(randname)+"_"+regionname
+            if not confirm(noprompt,"You are about to add a new NCC " +color.UNDERLINE+ ncname + color.END+" and private endpoint to workspace "+color.UNDERLINE+output["workspace_name"]+ color.END+" serverless compute networking config.") :
+                sys.exit()
             nccobj = create_nas(bearer,account_id, ncname,regionname)
             ncc_id = nccobj["network_connectivity_config_id"]
             print("Adding NCC to workspace")
@@ -552,27 +632,26 @@ def main():
             output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type)
             print(output)
             print("Please Approve your private endpoint and run get_ncc command  for NCC id ",ncc_id," once approved")
+    
     elif command == "ensure_workspace_ncc" :
         if account_id is None or workspace is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"-a|--accountId ACCOUNT-ID -w|--workspaceId WORKSPACE-ID")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID")
             sys.exit()
         
         output = get_workspace(bearer, account_id, workspace)
         has_ncc = False
         regionname = output["location"]
-        for key in output :
-            if key == "network_connectivity_config_id" :
-                has_ncc = True
-        if has_ncc :         
+
+        if "network_connectivity_config_id" in output : # has an NCC    
             ncc_id = output["network_connectivity_config_id"]
-            print("Adding NCC to workspace")
-            output = update_workspace(bearer, account_id, ncc_id, workspace)
             print("NCC id :",ncc_id)
         else : 
             print("creating new NCC")
             randname = ''.join(random.choices(string.ascii_lowercase + string.digits, k=7))
             ncname = "ncc_"+str(randname)+"_"+regionname
+            if not confirm(noprompt,"You are about to add a new NCC " +color.UNDERLINE+ ncname + color.END+" to workspace "+color.UNDERLINE+output["workspace_name"]+ color.END+" serverless compute networking config.") :
+                sys.exit()
             output = create_nas(bearer,account_id, ncname,regionname)
             ncc_id = output["network_connectivity_config_id"]
             print("Adding NCC to workspace")
