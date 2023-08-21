@@ -363,6 +363,7 @@ def usage() :
     '''+color.BOLD+'''get_ncc : '''+color.END+'''Gets details about a NCC, also used to "lock in" the PE info
         to a NCC after the PE is approved.
     '''+color.BOLD+'''get_workspace_ncc : '''+color.END+''' Gets the NCC ID for a given workspace
+    '''+color.BOLD+'''get_ncc_by_resource : '''+color.END+''' Checks the resource if its part of a NCC
     '''+color.BOLD+'''create_ncc : '''+color.END+''' Creates a blank NCC (network config) object and
     returns its NCC id
     '''+color.BOLD+'''create_pe : '''+color.END+''' Creates a new private endpoint in a NCC (network config) object

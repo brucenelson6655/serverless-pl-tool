@@ -250,6 +250,8 @@ __Utility Commands :__
 >__get_ncc :__ Gets details about a NCC, also used to "lock in" the PE
 info to a NCC after the PE is approved. Also "sets" the NCC after a change has been made to the NCC. 
 >
+>__get_ncc_by_resource :__  Checks the resource if its part of a NCC
+>
 >__get_workspace_ncc :__ Gets the NCC ID for a given workspace
 >
 >__create_ncc :__ Creates a blank NCC (network config) object and returns its NCC id
