@@ -535,8 +535,19 @@ def main():
     elif command == "create_pe" : 
         if account_id is None or ncc_id is None or resource_id is None or resource_type is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [-I or --noprompt]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [-F or --force][-I or --noprompt]")
             sys.exit()
+        
+        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type)
+        
+        if len(nccmatchtest) > 0 : 
+            for nccmatch in nccmatchtest : 
+                print(resource_id,"was found in NCC", nccmatch["ncc"])
+            if not override :
+                print("Either add or replace NCC",nccmatch["ncc"],"or use the -F or --force flag to override." )
+                sys.exit()
+
+
         if not confirm(noprompt,"You are about to add a private endpoint to your serverless compute networking config.") :
                 sys.exit()
         output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
