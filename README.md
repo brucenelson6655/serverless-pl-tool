@@ -65,12 +65,26 @@ __User / Password (user)__
 
 ## Definitions 
 __NCC or Network Connectivity Config__ : 
+The NCC or Network Connectivity Config is a confoguration object that can be attached to one or more workspaces in the serverless compute plane. NCCs are region specific. Think of it as a package of configuration data for service endpoints (Stable Endpoints)and Private Endpoints. A customer may hae just one per region or one per business unit or modality. 
 
 __Stable Endpoint__ :
+Stable Endpoints are for now service endpoints that are tied to a workspace in the region that are guarenteed to never change once declared and assigned. As a service endpoint they are still relying on public IPs but have a higher order of precidence for routling that give them a preferred, private route between source and target. But they are still a shared object as oppsed to private end points but also don't have the costs associated with private endpoints.  
 
 __Private Endpoint__ : 
+Private end points are a direct source to target communication, using RFC 1918 IPs (non-public). Private Endpoints are the most secure type of commnunication but do have a significant cost associated with them. 
 
 __Serverless Compute__ : 
+Literally the serverless data plane, which runs in the Databricks tenant. It cannot access *anything* in the customer's tenant unless its wither publically accessable, has service endpoints setup or uses a private endpoint to access. COntrol plane to server less compute comms use private IP communications. 
+
+__Commands and Options__ : 
+I have dumped out the -h or --help page from the tool below. Commands are call by using the `-C` switch with options. If you want to find out what are the nescessary options for a command, just run the command without any options and it will show you the the command line options. 
+
+        Example : `serverless-pl$ python3 serverlesspl.py -C get_ncc_by_resource
+        Missing Parameters : 
+        serverlesspl.py -C get_ncc_by_resource [-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]
+
+Any option in brackets is optional. Some commands will prompt you to procedd, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command. 
+
 
 ## Process : 
 
