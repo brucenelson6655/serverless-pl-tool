@@ -614,7 +614,7 @@ def main():
             for nccmatch in nccmatchtest : 
                 print(resource_id,"was found in NCC", nccmatch["ncc"])
             if not override :
-                print("Either add or replace NCC",nccmatch["ncc"],"or user the -F or --force flag to override." )
+                print("Either add or replace NCC",nccmatch["ncc"],"or use the -F or --force flag to override." )
                 sys.exit()
 
         if "network_connectivity_config_id" in output : # has an NCC 

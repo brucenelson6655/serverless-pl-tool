@@ -27,9 +27,9 @@ The serverless-pl tool helps with handling the REST-API and process to create se
    4. *Device Code and Username / Password cache and use a refresh token to prevent constant re-authentication*
    
 ### Credential files
-Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the -l or --login_type option for the mode (sp, device or user) and the -f or --config option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
+Each option for authentication uses a JSON file. By default the appplication uses a file called credential.json, but you can use a different file or files for different authentication methds or users using the `-l or --login_type` option for the mode (sp, device or user) and the `-f or --config` option for the filename. A sample credential file is in the repo, edit it accordinly and rename to credential.json. 
 
-For All of these different types credential files, you can also add as an option you account ID since its used in almost every command. If you include it stall can be overriden by using the "-a" or "--accountId" option.
+For All of these different types credential files, you can also add as an option you account ID since its used in almost every command. If you include it stall can be overriden by using the `-a or --accountId` option.
 
 
 Examples: 
@@ -79,11 +79,19 @@ Literally the serverless data plane, which runs in the Databricks tenant. It can
 __Commands and Options__ : 
 I have dumped out the -h or --help page from the tool below. Commands are call by using the `-C` switch with options. If you want to find out what are the nescessary options for a command, just run the command without any options and it will show you the the command line options. 
 
-        Example : `serverless-pl$ python3 serverlesspl.py -C get_ncc_by_resource
+        Example : serverless-pl$ python3 serverlesspl.py -C get_ncc_by_resource
         Missing Parameters : 
         serverlesspl.py -C get_ncc_by_resource [-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]
 
 Any option in brackets is optional. Some commands will prompt you to procedd, these are commands that change the NCC, or workspace environment. You can override this feature with a `-I or --noprompt` option - this is for scripting. But its then your responsibility to make sure you have things right before you run a command. 
+
+One last thing, commands that create a private end point `create_serverless_private_link` and `create_pe` will check to see if the resource id of the object you are wanting to create a private endpoint for, already has a private endpoint setup in a NCC. You will be promted to add a` -F` or `--force` flag to override this check. 
+
+    Example : python serverlesspl.py -C create_serverless_private_link -r /subscriptions/xxxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/databricks-demo/providers/Microsoft.Storage/storageAccounts/mystoarge -t dfs -w 5205279068054683
+    /subscriptions/xxxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/databricks-demo/providers/Microsoft.Storage/storageAccounts/mystoarge was found in NCC d9e29d2e-b18f-4abc-8fb6-443f2b5b773b
+    Either add or replace NCC d9e29d2e-b18f-4abc-8fb6-443f2b5b773b or use the -F or --force flag to override.
+
+This feature is designed to check on proliferation of private endpoints, and force you to check if you *really* need that private endpoint. 
 
 
 ## Process : 
@@ -106,6 +114,48 @@ __create_serverless_private_link()__
 - [Step 2] Ensure the private endpoint is successfully created
 - [Step 3] Approve the private endpoint (in the Azure Portal)
 - [Step 4] Refresh the private endpoint status in Databricks (__get_ncc()__)
+
+## Tutorial
+
+### Create a private endpoint
+
+Using the `create_serverless_private_link` command, it will perform the nesessary steps to check if a host already has an NCC, verify if your resource ID has a private end point setup already, if needed create a NCC and attech it to your workspace. The minimum set of options for this command are : 
+
+    -r or --resourceId 
+    -t or --resourceType
+    -w or --workspaceId
+
+The full command line options are : 
+
+    serverlesspl.py -C create_serverless_private_link [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]`
+
+
+You can add you account number if you didn't add it in the credential file, create a custom name for the NCC. Also as descussed ealier in this doc the optional -I or --nprompt and -F or --force if needed. 
+
+You will the the resource ID and type (blob, dfs) of the storage account or SQL and the workspace ID. 
+
+Run the commeand : 
+
+    serverlesspl.py -C create_serverless_private_link -r /subscriptions/xxxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/databricks-demo/providers/Microsoft.Storage/storageAccounts/mystoarge -t dfs -w 5205279068054683
+
+    creating new NCC
+    You are about to add a new NCC ncc_jwffgsi_westus and private endpoint to workspace bootcamp-plink serverless compute networking config.
+    OK to continue [Y/N]? Y
+
+    Adding NCC to workspace
+    Creating Private Endpoint
+    Please Approve your private endpoint and run get_ncc command  for NCC id xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx once approved
+
+Approve the privaet endpoint
+
+![Endpoint approval] (./images/approve.png)
+
+you will be prompted to approve the private end point in Azure. 
+
+Once approved come back to this tool and run the `get_ncc` command to update the private end point metadata and set the config 
+
+
+### Setup a stable endpoint 
 
 ### Options and Commands
 __ServerlessPL tool usage:__
