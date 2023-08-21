@@ -148,14 +148,49 @@ Run the commeand :
 
 Approve the privaet endpoint
 
-![Endpoint approval] (./images/approve.png)
+![Endpoint approval](./images/approve.png)
 
 you will be prompted to approve the private end point in Azure. 
 
 Once approved come back to this tool and run the `get_ncc` command to update the private end point metadata and set the config 
 
+    serverlesspl.py -C get_ncc -n d9e29d2e-b18f-4abc-8fb6-443f2b5b773b
+    Name : ncc_76876ggh_endpoint
+    Region : eastus
 
-### Setup a stable endpoint 
+    service (stable) endpoints
+    ------------------------
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastus-nephos2-xr/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastus-nephos4-xr/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastus-nephos5-xr/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastus-nephos6-xr/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastusc3-nephos3/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastusc3-nephos5/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastusc3-nephos6/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+    /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/prod-azure-eastusc3-nephos7/providers/Microsoft.Network/virtualNetworks/kaas-vnet/subnets/worker-subnet
+
+    private endpoints
+    ------------------------
+    rule_id : 42924a88-4f83-44e0-b9f2-a5f99730b378
+    network_connectivity_config_id : d9e29d2e-b18f-4abc-8fb6-443f2b5b773b
+    resource_id : /subscriptions/xxxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/databricks-demo/providers/Microsoft.Storage/storageAccounts/mystoarge
+    group_id : blob
+    endpoint_name : databricks-d9e29d2e-b18f-4abc-8fb6-443f2b5b773b-pe-d55845cd
+    connection_state : ESTABLISHED
+    creation_time : 1691592754558
+    updated_time : 1691592754558
+    
+    -----
+
+### Setup a stable endpoint / attach a NCC to a workspace
+
+Using the `ensure_workspace_ncc` command, it will perform the nesessary steps to check if a host already has an NCC, if needed create a NCC and attech it to your workspace. The minimum set of options for this command are : 
+
+    -w or --workspaceId
+
+The full command line options are : 
+
+    serverlesspl.py -C ensure_workspace_ncc [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID
 
 ### Options and Commands
 __ServerlessPL tool usage:__
