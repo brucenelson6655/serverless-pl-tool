@@ -120,6 +120,8 @@ credentials (See README)
 
 __-I or --noprompt :__ Run in non-interactive mode, do not prompt. Nor scripts etc.
 
+__-F or --force :__ Override default behavior to stop on a config issue
+
 __--nccname :__ Unique name for the NCC object
 
 __--region :__ Azure region, example: eastus, westus, westus2

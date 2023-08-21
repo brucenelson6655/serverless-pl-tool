@@ -479,6 +479,8 @@ def main():
             print("Missing Parameters : ")
             print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -w|--workspace WORKSPACE-ID")
             sys.exit()
+        if not confirm(noprompt,"You are about to attach a NCC to your workspace which could alter your serverless compute networking config.") :
+                sys.exit()
         output = update_workspace (bearer, account_id, ncc_id, workspace) 
         print(output)
     elif command == "get_stable_ep" :
@@ -523,23 +525,29 @@ def main():
     elif command == "create_ncc" : # todo 
         if account_id is None or account_id is None or ncname is None or regionname is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] --nccname NAME-OF-NCC --region AZURE-REGION")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] --nccname NAME-OF-NCC --region AZURE-REGION [-I or --noprompt]")
             sys.exit()
+        if not confirm(noprompt,"You are about to create a NCC in your serverless compute networking config.") :
+                sys.exit()
         output = create_nas(bearer,account_id, ncname,regionname)
         ncc_id = output["network_connectivity_config_id"]
         print("NCC id",ncc_id,"\n\n",output)
     elif command == "create_pe" : 
         if account_id is None or ncc_id is None or resource_id is None or resource_type is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [-I or --noprompt]")
             sys.exit()
+        if not confirm(noprompt,"You are about to add a private endpoint to your serverless compute networking config.") :
+                sys.exit()
         output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
         print(output)
     elif command == "delete_ncc" :
         if account_id is None or account_id is None or ncc_id is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID [-I or --noprompt]")
             sys.exit()
+        if not confirm(noprompt,"You are about to delete a NCC from your serverless compute networking config.") :
+                sys.exit()
         output = delete_ncc(bearer, account_id, ncc_id)
         pprint.pprint(output)
     elif command == "get_ncc_by_resource" :
@@ -593,7 +601,7 @@ def main():
     elif command == "create_serverless_private_link" :
         if account_id is None or workspace is None or resource_id is None or resource_type is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]")
             sys.exit()
         
         output = get_workspace(bearer, account_id, workspace)
