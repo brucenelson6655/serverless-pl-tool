@@ -634,7 +634,7 @@ def main():
             print("Creating Private Endpoint")
             if not confirm(noprompt,"You are about to add a private endpoint to workspace "+output["workspace_name"]+" serverless compute networking config.") :
                 sys.exit()
-            # output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
+            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
             print(output)
             print("Please Approve your private endpoint and run get_ncc command for NCC id ",ncc_id," once approved")
         else : 
