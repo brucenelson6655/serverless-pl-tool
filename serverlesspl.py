@@ -37,6 +37,7 @@ def get_bearer_token_msal(credfile, login_type):
         user_parameters = json.load(json_data)
         json_data.close()
 
+
     authority_url = authority_host_url + user_parameters['tenant']
 
     for key in user_parameters : 
@@ -410,7 +411,7 @@ def main():
         END = '\033[0m'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:t:f:l:v:IF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
+        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:t:f:l:vIF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err)  # will print something like "option -a not recognized"
@@ -459,6 +460,9 @@ def main():
     
     if command is not None :
         bearer = get_bearer_token_msal(config_file, login_type)
+        if verbose : 
+            print(bearer)
+
         # pick up account id from global vars if needed 
         if account_id == None :
             account_id = ACCOUNT_ID
@@ -483,7 +487,7 @@ def main():
         if not confirm(noprompt,"You are about to attach a NCC to your workspace which could alter your serverless compute networking config.") :
                 sys.exit()
         output = update_workspace (bearer, account_id, ncc_id, workspace) 
-        print(output)
+        pprint.pprint(output)
     elif command == "get_stable_ep" :
         if account_id is None or workspace is None : 
             print("Missing Parameters : ")
@@ -543,16 +547,20 @@ def main():
         
         if len(nccmatchtest) > 0 : 
             for nccmatch in nccmatchtest : 
-                print(resource_id,"was found in NCC", nccmatch["ncc"])
+                print("\n",resource_id,"was found in NCC", nccmatch["ncc"])
             if not override :
-                print("Either add or replace NCC",nccmatch["ncc"],"or use the -F or --force flag to override." )
+                print("\n\nThe resource id you are creating a private endpoint for is already attached to one or more NCC, if the workspace you are using in the command has an NCC already or you want to generate a new NCC - and you don't want to re-use one of NCC it found with the resource ID\n\nuse the -F or --force flag to override to create a new private end point and new NCC if needed,")
+                print("\n... if not, either add or replace NCC above using the attach_workspace command" )
                 sys.exit()
+            else : 
+                if not confirm(noprompt,"You are about to create an additional private endpoint for resource ID "+color.UNDERLINE+resource_id+ color.END+" in a new or current serverless compute networking config.") :
+                    sys.exit()
 
 
         if not confirm(noprompt,"You are about to add a private endpoint to your serverless compute networking config.") :
                 sys.exit()
         output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
-        print(output)
+        pprint.pprint(output)
     elif command == "delete_ncc" :
         if account_id is None or account_id is None or ncc_id is None : 
             print("Missing Parameters : ")
@@ -624,18 +632,22 @@ def main():
         
         if len(nccmatchtest) > 0 : 
             for nccmatch in nccmatchtest : 
-                print(resource_id,"was found in NCC", nccmatch["ncc"])
+                print("\n",resource_id,"was found in NCC", nccmatch["ncc"])
             if not override :
-                print("Either add or replace NCC",nccmatch["ncc"],"or use the -F or --force flag to override." )
+                print("\n\nThe resource id you are creating a private endpoint for is already attached to one or more NCC, if the workspace you are using in the command has an NCC already or you want to generate a new NCC - and you don't want to re-use one of NCC it found with the resource ID\n\nuse the -F or --force flag to override to create a new private end point and new NCC if needed,")
+                print("\n... if not, either add or replace NCC above using the attach_workspace command" )
                 sys.exit()
+            else : 
+                if not confirm(noprompt,"You are about to create an additional private endpoint for resource ID "+color.UNDERLINE+resource_id+ color.END+" in a new or current serverless compute networking config.") :
+                    sys.exit()
 
         if "network_connectivity_config_id" in output : # has an NCC 
             ncc_id = output["network_connectivity_config_id"]
             print("Creating Private Endpoint")
-            if not confirm(noprompt,"You are about to add a private endpoint to workspace "+output["workspace_name"]+" serverless compute networking config.") :
+            if not confirm(noprompt,"You are about to add a private endpoint to workspace "+output["workspace_name"]+" using NCC "+ncc_id+" serverless compute networking config.") :
                 sys.exit()
             output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
-            print(output)
+            pprint.pprint(output)
             print("Please Approve your private endpoint and run get_ncc command for NCC id ",ncc_id," once approved")
         else : 
             print("creating new NCC")
@@ -650,7 +662,7 @@ def main():
             output = update_workspace(bearer, account_id, ncc_id, workspace)
             print("Creating Private Endpoint")
             output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type)
-            print(output)
+            pprint.pprint(output)
             print("Please Approve your private endpoint and run get_ncc command  for NCC id ",ncc_id," once approved")
     
     elif command == "ensure_workspace_ncc" :
