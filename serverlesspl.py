@@ -101,6 +101,9 @@ def get_bearer_token_msal(credfile, login_type):
             print(flow['message'])
             result = app.acquire_token_by_device_flow(flow)
 
+    if login_type == "external":
+        AzureAccessToken = os.environ["BEARER_TOKEN"]
+        return(AzureAccessToken)
 
     if "access_token" in result:
         AzureAccessToken = result["access_token"]
@@ -337,7 +340,7 @@ def usage() :
     '''+color.BOLD+'''-n or --nccId :'''+color.END+''' The ID of the NCC (network config) object
     '''+color.BOLD+'''-l or --login_type :'''+color.END+''' Default service principal. Choose between
         Device code login (device), Username / Password (user),
-        or Service Principal (sp) See README
+        Service Principal (sp), or ENV Var (external) See README
     '''+color.BOLD+'''-f or --config :'''+color.END+''' Default credential.json, JSON file for holding user / sp
         credentials (See README)
     '''+color.BOLD+'''-I or --noprompt :'''+color.END+''' Run in non-interactive mode, do not prompt. For scripts etc.

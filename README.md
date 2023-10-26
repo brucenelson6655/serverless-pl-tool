@@ -23,7 +23,8 @@ The serverless-pl tool helps with handling the REST-API and process to create se
    1. Service Principal (*default*)
    2. User device code 
    3. Username and Password
-   4. *Device Code and Username / Password cache and use a refresh token to prevent constant re-authentication*
+   4. ENV Variable (BEARER_TOKEN)
+   <p> *Device Code and Username / Password cache and use a refresh token to prevent constant re-authentication*
    
 ### Credential files
 Each option for authentication uses a JSON file. By default the application uses a file called credential.json, but you can use a different file or files for different authentication methods or users using the `-l or --login_type` option for the mode (sp, device or user) and the `-f or --config` option for the filename. A sample credential file is in the repo, edit it accordingly and rename to credential.json. 
@@ -216,7 +217,7 @@ __-a or --accountId :__ The Account ID from UC account console
 
 __-n or --nccId :__ The ID of the NCC (network config) object
 
-__-l or --login_type :__ Default service principal. Choose between Device code login (device), Username / Password (user), or Service Principal (sp) See README
+__-l or --login_type :__ Default service principal. Choose between Device code login (device), Username / Password (user), Service Principal (sp), or ENV Var (external) See README
 
 __-f or --config :__ Default credential.json, JSON file for holding user / sp
 
