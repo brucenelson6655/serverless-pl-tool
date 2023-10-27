@@ -37,12 +37,11 @@ def get_bearer_token_msal(credfile, login_type):
         user_parameters = json.load(json_data)
         json_data.close()
 
-
-    authority_url = authority_host_url + user_parameters['tenant']
-
     for key in user_parameters : 
         if key == "accountId" :
             ACCOUNT_ID = user_parameters["accountId"] 
+        if key == "tenant" :
+            authority_url = authority_host_url + user_parameters['tenant']
 
     cache = msal.SerializableTokenCache()
 
