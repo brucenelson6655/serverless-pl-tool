@@ -104,6 +104,10 @@ def get_bearer_token_msal(credfile, login_type):
         AzureAccessToken = os.environ["BEARER_TOKEN"]
         return(AzureAccessToken)
 
+    if login_type == "browser":
+        ## https://learn.microsoft.com/en-us/entra/msal/python/#basic-usage
+        return(0)
+
     if "access_token" in result:
         AzureAccessToken = result["access_token"]
         return(AzureAccessToken)
@@ -274,6 +278,24 @@ def list_workspaces(bearertoken, accountId) :
 
     return(response.text)
 
+def delete_pe(bearertoken, accountId, nccId, peId) : 
+    url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId+"/private-endpoint-rules/"+peId
+
+    payload = {}
+    headers = {
+        'Authorization': 'Bearer '+bearertoken
+    }
+
+    try : 
+        response = requests.request("DELETE", url, headers=headers, data=payload)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as errh:
+        print("HTTP Error")
+        print(errh.args[0]) 
+
+    print(response.text)
+
+
 def delete_ncc (bearertoken, accountId, nccId) : 
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId
 
@@ -370,6 +392,7 @@ def usage() :
     '''+color.BOLD+'''create_ncc : '''+color.END+''' Creates a blank NCC (network config) object and
     returns its NCC id
     '''+color.BOLD+'''create_pe : '''+color.END+''' Creates a new private endpoint in a NCC (network config) object
+    '''+color.BOLD+'''delete_pe : '''+color.END+''' deletes (deactivates) a private endpoint in a NCC (network config) object
     '''+color.BOLD+'''get_ncc_list : '''+color.END+''' Gets a list of NCCs in the account (tenant)
     '''+color.BOLD+'''get_workspace : '''+color.END+''' Gets details about a given workspace including
         the NCC id if its attached
@@ -399,6 +422,7 @@ def main():
     resource_type = None
     noprompt = False
     override = False
+    pe_rule_id = None
 
     class color:
         PURPLE = '\033[95m'
@@ -413,7 +437,7 @@ def main():
         END = '\033[0m'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:t:f:l:vIF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
+        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:p:t:f:l:vIF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "PeRuleId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err)  # will print something like "option -a not recognized"
@@ -444,6 +468,8 @@ def main():
             account_id = a
         elif o in ("-n", "--nccId"):
             ncc_id = a
+        elif o in ("-p","--PeRuleId"):
+            pe_rule_id = a
         elif o in ("-l","--login_type"):
             login_type = a
         elif o in ("-f","--config"):
@@ -463,6 +489,7 @@ def main():
     if command is not None :
         bearer = get_bearer_token_msal(config_file, login_type)
         if verbose : 
+            print(config_file, login_type)
             print(bearer)
 
         # pick up account id from global vars if needed 
@@ -563,6 +590,15 @@ def main():
                 sys.exit()
         output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
         pprint.pprint(output)
+    elif command == "delete_pe" :
+        if account_id is None or ncc_id is None or pe_rule_id is None : 
+            print("Missing Parameters : ")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -p|-- PeRuleId [-I or --noprompt]")
+            sys.exit()
+        if not confirm(noprompt,"You are about to delete/deactivate a Private Endpoint from your serverless compute networking config.") :
+                sys.exit()
+        output = delete_pe(bearer, account_id, ncc_id, pe_rule_id)
+        pprint.pprint(output)
     elif command == "delete_ncc" :
         if account_id is None or account_id is None or ncc_id is None : 
             print("Missing Parameters : ")
@@ -597,6 +633,10 @@ def main():
                 pprint.pprint(ncc_json)
             else:
                 print("{:<30} {:<36} {:<15}".format(ncc_json["name"],ncc_json["network_connectivity_config_id"],ncc_json["region"]))
+    elif command == "get_workspace_list" :
+        print("DEBUG")
+        output = list_workspaces(bearer, account_id)
+        print(output)
     elif command == "get_workspace" : 
         if account_id is None or workspace is None : 
             print("Missing Parameters : ")

@@ -259,6 +259,8 @@ info to a NCC after the PE is approved. Also "sets" the NCC after a change has b
 >
 >__create_pe :__ Creates a new private endpoint in a NCC (network config)
 object
+>__delete_pe :__ Deletes (deactivates) an existing private endpoint in a NCC (network config)
+object
 >
 >__get_ncc_list :__ Gets a list of NCCs in the account (tenant)
 >
