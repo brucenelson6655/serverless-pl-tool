@@ -206,7 +206,11 @@ def get_ncc_list (bearertoken, accountId) :
         print("HTTP Error")
         print(errh.args[0]) 
 
-    return(response.json())
+   ##  print(response.json())
+
+    responsejson = json.loads(response.text)
+
+    return(responsejson["items"])
 
 def get_ncc (bearertoken, accountId, nccId) : 
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId

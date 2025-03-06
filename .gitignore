@@ -17,4 +17,8 @@ safe-flag-ws.txt
 /tt
 /.databrickscfg
 /images
+/derby.config
+/bash
+/run.sh
+
 
