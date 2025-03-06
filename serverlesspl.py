@@ -210,7 +210,10 @@ def get_ncc_list (bearertoken, accountId) :
 
     responsejson = json.loads(response.text)
 
-    return(responsejson["items"])
+    sortedresponse = sorted(responsejson["items"], key=lambda x: x['name'])
+
+
+    return(sortedresponse)
 
 def get_ncc (bearertoken, accountId, nccId) : 
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId
