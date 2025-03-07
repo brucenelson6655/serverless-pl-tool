@@ -133,7 +133,7 @@ Using the `create_serverless_private_link` command, it will perform the necessar
 
 The full command line options are : 
 
-    serverlesspl.py -C create_serverless_private_link [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID [-t|--type RESOURCE-TYPE or -d | --domain_list DOAIN-LIST] [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]`
+    serverlesspl.py -C create_serverless_private_link [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID [-t|--type RESOURCE-TYPE or -d | --domain_list DOMAIN-LIST] [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]`
 
 
 You can add you account number if you didn't add it in the credential file, create a custom name for the NCC. Also as descussed ealier in this doc the optional -I or --nprompt and -F or --force if needed. 

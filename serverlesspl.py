@@ -689,16 +689,16 @@ def main():
             else :
                 print("NCC id: none")
     elif command == "create_serverless_private_link" :
-        if account_id is None or workspace is None or resource_id is None or resource_type is None: 
+        if account_id is None or workspace is None or resource_id is None or (resource_type or domain_list) is None: 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID [-t|--type RESOURCE-TYPE or -d| --domain_list DOMAIN LIST] [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]")
             sys.exit()
         
         output = get_workspace(bearer, account_id, workspace)
         has_ncc = False
         regionname = output["location"]
 
-        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type)
+        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type, domain_list)
         
         if len(nccmatchtest) > 0 : 
             for nccmatch in nccmatchtest : 
