@@ -8,6 +8,7 @@ import atexit
 import pprint
 import string
 import random
+import collections
 
 # parameters
     # login file
@@ -155,13 +156,23 @@ def update_workspace (bearertoken, accountId, nccId, workspaceId) :
 
     return(response.json())
 
-def create_pe (bearertoken, accountId, nccId, resourceID, resourceType) : 
+def create_pe (bearertoken, accountId, nccId, resourceID, resourceType, domainList) : 
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId+"/private-endpoint-rules"
 
-    payload = json.dumps({
-    "resource_id": f"{resourceID}",
-    "group_id": f"{resourceType}"
-    })
+    if not resourceType : 
+        resourceType = ''
+
+    if resourceType and domainList == None :
+        payload = json.dumps({
+        "resource_id": f"{resourceID}",
+        "group_id": f"{resourceType}"
+        })
+    elif not domainList == None and not resourceType : 
+        payload = json.dumps({
+        "resource_id": f"{resourceID}",
+        "domain_names": domainList
+        })
+
     headers = {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer '+bearertoken
@@ -176,9 +187,12 @@ def create_pe (bearertoken, accountId, nccId, resourceID, resourceType) :
 
     return(response.json())
 
-def get_ncc_by_resource (bearertoken, accountId, resourceID, resourceType) : 
+def get_ncc_by_resource (bearertoken, accountId, resourceID, resourceType, domainList) : 
 
     nccmatch = []
+
+    if not resourceType : 
+        resourceType = ''
 
     nccs = get_ncc_list(bearertoken,accountId)
 
@@ -188,7 +202,11 @@ def get_ncc_by_resource (bearertoken, accountId, resourceID, resourceType) :
             if "target_rules" in ncc["egress_config"] :
                 for res in ncc["egress_config"]["target_rules"]["azure_private_endpoint_rules"] :
                     if res["resource_id"] == resourceID and res["group_id"] == resourceType and res["connection_state"] == "ESTABLISHED" :
-                        nccmatch.append({"ncc" : ncc_id})           
+                        if "domain_names" in res : 
+                            if collections.Counter(domainList) == collections.Counter(res["domain_names"]) :
+                                nccmatch.append({"ncc" : ncc_id})
+                        else : 
+                            nccmatch.append({"ncc" : ncc_id})         
     return nccmatch
 
 def get_ncc_list (bearertoken, accountId) :
@@ -430,6 +448,7 @@ def main():
     noprompt = False
     override = False
     pe_rule_id = None
+    domain_list = None
 
     class color:
         PURPLE = '\033[95m'
@@ -444,7 +463,7 @@ def main():
         END = '\033[0m'
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:p:t:f:l:vIF", ["help", "command=", "resourceId=", "type=", "workspaceId=", "PeRuleId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
+        opts, args = getopt.getopt(sys.argv[1:], "hC:r:t:w:a:n:r:d:p:t:f:l:vIF", ["help", "command=", "resourceId=", "domain_list=", "type=", "workspaceId=", "PeRuleId=", "login_type=", "config=", "nccname=", "region=","logout","noprompt","force"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(err)  # will print something like "option -a not recognized"
@@ -485,6 +504,8 @@ def main():
             resource_id = a
         elif o in ("-t","--type"):
             resource_type = a
+        elif o in ("-d", "--domain_list"):
+            domain_list = a.strip('[]').split(',')
         elif o in ("-I","--noprompt") :
             noprompt = True
         elif o in ("-F","--force") :
@@ -574,12 +595,12 @@ def main():
         ncc_id = output["network_connectivity_config_id"]
         print("NCC id",ncc_id,"\n\n",output)
     elif command == "create_pe" : 
-        if account_id is None or ncc_id is None or resource_id is None or resource_type is None : 
+        if account_id is None or ncc_id is None or resource_id is None or (resource_type or domain_list) is None : 
             print("Missing Parameters : ")
-            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [-F or --force][-I or --noprompt]")
+            print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -n|--nccId NCC-ID -r|--resourceId RESOURCE-ID [-t|--type RESOURCE-TYPE or -d | --domain_list DOAIN-LIST][-F or --force][-I or --noprompt]")
             sys.exit()
         
-        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type)
+        nccmatchtest = get_ncc_by_resource(bearer, account_id, resource_id, resource_type, domain_list)
         
         if len(nccmatchtest) > 0 : 
             for nccmatch in nccmatchtest : 
@@ -595,7 +616,7 @@ def main():
 
         if not confirm(noprompt,"You are about to add a private endpoint to your serverless compute networking config.") :
                 sys.exit()
-        output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
+        output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type, domain_list) 
         pprint.pprint(output)
     elif command == "delete_pe" :
         if account_id is None or ncc_id is None or pe_rule_id is None : 
@@ -616,12 +637,12 @@ def main():
         output = delete_ncc(bearer, account_id, ncc_id)
         pprint.pprint(output)
     elif command == "get_ncc_by_resource" :
-        if account_id is None or resource_id is None or resource_type is None: 
+        if account_id is None or resource_id is None or (resource_type or domain_list) is None: 
             print("Missing Parameters : ")
             print(sys.argv[0],"-C",command,"[-a|--accountId ACCOUNT-ID] -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC]")
             sys.exit()
         
-        output = get_ncc_by_resource(bearer,account_id, resource_id, resource_type)
+        output = get_ncc_by_resource(bearer,account_id, resource_id, resource_type, domain_list)
         for nccmatch in output : 
             print(resource_id,"was found in NCC", nccmatch["ncc"])
     
@@ -695,7 +716,7 @@ def main():
             print("Creating Private Endpoint")
             if not confirm(noprompt,"You are about to add a private endpoint to workspace "+output["workspace_name"]+" using NCC "+ncc_id+" serverless compute networking config.") :
                 sys.exit()
-            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type) 
+            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type, domain_list) 
             pprint.pprint(output)
             print("Please Approve your private endpoint and run get_ncc command for NCC id ",ncc_id," once approved")
         else : 
@@ -710,7 +731,7 @@ def main():
             print("Adding NCC to workspace")
             output = update_workspace(bearer, account_id, ncc_id, workspace)
             print("Creating Private Endpoint")
-            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type)
+            output = create_pe (bearer, account_id, ncc_id, resource_id, resource_type, domain_list)
             pprint.pprint(output)
             print("Please Approve your private endpoint and run get_ncc command  for NCC id ",ncc_id," once approved")
     

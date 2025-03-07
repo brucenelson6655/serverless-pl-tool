@@ -128,12 +128,12 @@ __create_serverless_private_link()__
 Using the `create_serverless_private_link` command, it will perform the necessary steps to check if a host already has an NCC, verify if your resource ID has a private end point setup already, if needed create a NCC and attach it to your workspace. The minimum set of options for this command are : 
 
     -r or --resourceId 
-    -t or --resourceType
+    -t or --resourceType [or] -d or -domain_list
     -w or --workspaceId
 
 The full command line options are : 
 
-    serverlesspl.py -C create_serverless_private_link [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID -t|--type RESOURCE-TYPE [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]`
+    serverlesspl.py -C create_serverless_private_link [-a|--accountId ACCOUNT-ID] -w|--workspaceId WORKSPACE-ID -r|--resourceId RESOURCE-ID [-t|--type RESOURCE-TYPE or -d | --domain_list DOAIN-LIST] [--nccname NAME-OF-NCC][-F or --force][-I or --noprompt]`
 
 
 You can add you account number if you didn't add it in the credential file, create a custom name for the NCC. Also as descussed ealier in this doc the optional -I or --nprompt and -F or --force if needed. 
@@ -188,6 +188,10 @@ Once approved come back to this tool and run the `get_ncc` command to update the
     
     -----
 
+### Create a privat link service end point (i.e Snowflake or SLB)
+Using the create_pe cand pass the resource id, ncc id and the domain list (aliases). The domain list should be a string useing a format like ```"[name1, name3, name3]"```
+
+    serverlesspl.py -C create_pe -n b3d52395-2a08-4d1b-9d4a-55ac63847c32 -r sf-pvlinksvc-azwestus2.xxxxxxxx.xxxxxxxx.westus2.azure.privatelinkservice --domain_list "[xxxxxx1.west-us-2.privatelink.snowflakecomputing.com,ocsp.xxxxxxxx2.west-us-2.privatelink.snowflakecomputing.com,xxxxxxxx3.privatelink.snowflakecomputing.com]" 
 ### Setup a stable endpoint / attach a NCC to a workspace
 
 Using the `ensure_workspace_ncc` command, it will perform the nesessary steps to check if a host already has an NCC, if needed create a NCC and attech it to your workspace. The minimum set of options for this command are : 
@@ -233,7 +237,9 @@ __--region :__ Azure region, example: eastus, westus, westus2
 
 __-r or --resourceId :__ The resource ID of the storage account/sql db you wish to create a private end point to
 
-__-t or --type :__ The type of resource, dfs or blob or SqlServer
+__-t or --type :__ The type of resource, e.g. dfs or blob or SqlServer
+
+__-d or --domain_list :__ Alias list for private link service
 
 __commands :__ (use with -C or --command)
 
