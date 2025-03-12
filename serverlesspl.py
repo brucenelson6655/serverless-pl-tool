@@ -303,6 +303,23 @@ def list_workspaces(bearertoken, accountId) :
 
     return(response.text)
 
+def get_pe(bearertoken, accountId, nccId, peId) : 
+    url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId+"/private-endpoint-rules/"+peId
+
+    payload = {}
+    headers = {
+        'Authorization': 'Bearer '+bearertoken
+    }
+
+    try : 
+        response = requests.request("GET", url, headers=headers, data=payload)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as errh:
+        print("HTTP Error")
+        print(errh.args[0]) 
+
+    print(response.text)
+
 def delete_pe(bearertoken, accountId, nccId, peId) : 
     url = ACCOUNT_URL+accountId+"/network-connectivity-configs/"+nccId+"/private-endpoint-rules/"+peId
 
@@ -581,6 +598,7 @@ def main():
                     for ep in output["egress_config"]["target_rules"]["azure_private_endpoint_rules"] : 
                         for key in ep :
                             print(key,":",ep[key])
+                        print("pe_resource_id : /subscriptions/8453a5d5-9e9e-40c7-87a4-0ab4cc197f48/resourceGroups/private-link-lm-prod-customer-"+output["region"]+"/providers/Microsoft.Network/privateEndpoints/"+ep["endpoint_name"])
                         print("-----\n")
             if not has_ep : 
                 print("None")
